@@ -246,27 +246,70 @@ function restoreData(event) {
   reader.readAsArrayBuffer(file);
 }
 
-function saveData() {
-  const worksheet = XLSX.utils.json_to_sheet(hasilInputData);
-  const workbook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
-  XLSX.writeFile(workbook, "hasil-input.xlsx");
+async function saveData() {
+  const options = {
+    types: [
+      {
+        description: "Excel Files",
+        accept: {
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet": [
+            ".xlsx",
+          ],
+        },
+      },
+    ],
+  };
+  try {
+    const handle = await window.showSaveFilePicker(options);
+    const writable = await handle.createWritable();
+    const worksheet = XLSX.utils.json_to_sheet(hasilInputData);
+    const workbook = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    const excelBuffer = XLSX.write(workbook, {
+      bookType: "xlsx",
+      type: "array",
+    });
+    await writable.write(excelBuffer);
+    await writable.close();
+    console.log("File saved successfully");
+  } catch (error) {
+    console.error("Error saving file:", error);
+  }
 }
 
-function printData() {
-  const { jsPDF } = window.jspdf;
-  const doc = new jsPDF();
-  const data = hasilInputData.map((item) => [
-    item.No,
-    item["ID Barang"],
-    item["Nama Barang"],
-    item.Jumlah,
-  ]);
-  doc.autoTable({
-    head: [["No", "ID Barang", "Nama Barang", "Jumlah"]],
-    body: data,
-  });
-  doc.save("hasil-input.pdf");
+async function printData() {
+  const options = {
+    types: [
+      {
+        description: "PDF Files",
+        accept: {
+          "application/pdf": [".pdf"],
+        },
+      },
+    ],
+  };
+  try {
+    const handle = await window.showSaveFilePicker(options);
+    const writable = await handle.createWritable();
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const data = hasilInputData.map((item) => [
+      item.No,
+      item["ID Barang"],
+      item["Nama Barang"],
+      item.Jumlah,
+    ]);
+    doc.autoTable({
+      head: [["No", "ID Barang", "Nama Barang", "Jumlah"]],
+      body: data,
+    });
+    const pdfBuffer = doc.output("arraybuffer");
+    await writable.write(pdfBuffer);
+    await writable.close();
+    console.log("File saved successfully");
+  } catch (error) {
+    console.error("Error saving file:", error);
+  }
 }
 
 function handleSearchHasilInput() {
