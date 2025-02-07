@@ -155,37 +155,20 @@ function submitModal() {
     if (existingItem) {
       openModal(existingItem, hasilInputData.indexOf(existingItem), true);
     } else {
-      const hasilInputBody = document.getElementById("hasilInputBody");
-      const row = document.createElement("tr");
-      row.classList.add("cursor-pointer", "hover:bg-gray-200");
-      row.innerHTML = `
-            <td class="border p-2">${currentNumber}</td>
-            <td class="border p-2">${selectedItem["id barang"]}</td>
-            <td class="border p-2">${selectedItem["nama barang"]}</td>
-            <td class="border p-2">${jumlah}</td>
-          `;
-      row.addEventListener("click", () =>
-        openModal(
-          {
-            No: currentNumber,
-            "ID Barang": selectedItem["id barang"],
-            "Nama Barang": selectedItem["nama barang"],
-            Jumlah: jumlah,
-          },
-          hasilInputData.length
-        )
-      );
-      hasilInputBody.appendChild(row);
       hasilInputData.push({
-        No: currentNumber,
+        No: hasilInputData.length + 1,
         "ID Barang": selectedItem["id barang"],
         "Nama Barang": selectedItem["nama barang"],
         Jumlah: jumlah,
       });
-      currentNumber++;
-      closeModal();
-      displayHasilInputData(hasilInputData, currentPage); // Tambahkan ini untuk memperbarui tampilan data
+      hasilInputData = hasilInputData.map((item, index) => ({
+        ...item,
+        No: index + 1,
+      }));
+      currentNumber = hasilInputData.length + 1;
+      displayHasilInputData(hasilInputData, currentPage);
       setupPaginationHasilInput(hasilInputData);
+      closeModal();
     }
   }
 }
@@ -194,6 +177,11 @@ function updateModal() {
   const jumlah = document.getElementById("modalInput").value;
   if (jumlah && editIndex !== null && hasilInputData[editIndex]) {
     hasilInputData[editIndex].Jumlah = jumlah;
+    hasilInputData = hasilInputData.map((item, index) => ({
+      ...item,
+      No: index + 1,
+    }));
+    currentNumber = hasilInputData.length + 1;
     displayHasilInputData(hasilInputData, currentPage);
     setupPaginationHasilInput(hasilInputData);
     closeModal();
